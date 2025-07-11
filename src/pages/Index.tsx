@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ShoppingCart, Search, Star, Filter, Menu, X } from "lucide-react";
+import { ShoppingCart, Search, Star, Filter, Menu, X, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -50,10 +50,12 @@ const Index = () => {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-8">
-              <Link to="/" className="text-gray-700 hover:text-blue-600 transition-colors">Home</Link>
+              <Link to="/" className="text-blue-600 font-semibold">Home</Link>
               <Link to="/products" className="text-gray-700 hover:text-blue-600 transition-colors">Products</Link>
               <Link to="/about" className="text-gray-700 hover:text-blue-600 transition-colors">About</Link>
               <Link to="/contact" className="text-gray-700 hover:text-blue-600 transition-colors">Contact</Link>
+              <Link to="/services" className="text-gray-700 hover:text-blue-600 transition-colors">Services</Link>
+              <Link to="/faq" className="text-gray-700 hover:text-blue-600 transition-colors">FAQ</Link>
             </nav>
 
             <div className="flex items-center space-x-4">
@@ -65,6 +67,13 @@ const Index = () => {
                       {cartItemsCount}
                     </Badge>
                   )}
+                </Button>
+              </Link>
+
+              <Link to="/auth">
+                <Button variant="outline" size="sm">
+                  <User className="h-4 w-4 mr-2" />
+                  Login
                 </Button>
               </Link>
 
@@ -83,10 +92,12 @@ const Index = () => {
           {isMenuOpen && (
             <nav className="md:hidden mt-4 pb-4 border-t border-gray-200 pt-4">
               <div className="flex flex-col space-y-2">
-                <Link to="/" className="text-gray-700 hover:text-blue-600 transition-colors py-2">Home</Link>
+                <Link to="/" className="text-blue-600 font-semibold py-2">Home</Link>
                 <Link to="/products" className="text-gray-700 hover:text-blue-600 transition-colors py-2">Products</Link>
                 <Link to="/about" className="text-gray-700 hover:text-blue-600 transition-colors py-2">About</Link>
                 <Link to="/contact" className="text-gray-700 hover:text-blue-600 transition-colors py-2">Contact</Link>
+                <Link to="/services" className="text-gray-700 hover:text-blue-600 transition-colors py-2">Services</Link>
+                <Link to="/faq" className="text-gray-700 hover:text-blue-600 transition-colors py-2">FAQ</Link>
               </div>
             </nav>
           )}
@@ -233,6 +244,8 @@ const Index = () => {
                 <li><Link to="/products" className="hover:text-white transition-colors">Products</Link></li>
                 <li><Link to="/about" className="hover:text-white transition-colors">About</Link></li>
                 <li><Link to="/contact" className="hover:text-white transition-colors">Contact</Link></li>
+                <li><Link to="/services" className="hover:text-white transition-colors">Services</Link></li>
+                <li><Link to="/faq" className="hover:text-white transition-colors">FAQ</Link></li>
               </ul>
             </div>
             <div>
@@ -246,14 +259,14 @@ const Index = () => {
             <div>
               <h4 className="font-semibold mb-4">Contact Info</h4>
               <ul className="space-y-2 text-gray-400">
-                <li>Email: info@shophub.com</li>
+                <li>Email: muhib.khan@shophub.com</li>
                 <li>Phone: (555) 123-4567</li>
                 <li>Address: 123 Shopping St, City, State 12345</li>
               </ul>
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 ShopHub. All rights reserved.</p>
+            <p>&copy; 2024 ShopHub by Muhib Khan. All rights reserved.</p>
           </div>
         </div>
       </footer>
