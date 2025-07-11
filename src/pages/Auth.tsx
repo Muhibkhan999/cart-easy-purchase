@@ -7,13 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import type { User, Session } from '@supabase/supabase-js';
+import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -22,13 +23,15 @@ const Auth = () => {
     email: "",
     password: "",
     fullName: "",
-    confirmPassword: ""
+    confirmPassword: "",
+    userType: "buyer"
   });
 
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state changed:', event, session);
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -59,24 +62,37 @@ const Auth = () => {
     });
   };
 
+  const handleUserTypeChange = (value: string) => {
+    setFormData({
+      ...formData,
+      userType: value
+    });
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log('Attempting login with:', formData.email);
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Login error:', error);
+        throw error;
+      }
 
+      console.log('Login successful:', data);
       toast({
         title: "Welcome back!",
         description: "You have successfully logged in."
       });
 
     } catch (error: any) {
+      console.error('Login failed:', error);
       toast({
         title: "Login Failed",
         description: error.message || "Invalid email or password",
@@ -101,8 +117,17 @@ const Auth = () => {
 
     if (formData.password.length < 6) {
       toast({
-        title: "Weak Password",
+        title: "Weak Password", 
         description: "Password must be at least 6 characters long",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!formData.fullName.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter your full name",
         variant: "destructive"
       });
       return;
@@ -111,27 +136,56 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      console.log('Attempting signup with:', { 
+        email: formData.email, 
+        userType: formData.userType, 
+        fullName: formData.fullName 
+      });
+      
       const redirectUrl = `${window.location.origin}/`;
       
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
           emailRedirectTo: redirectUrl,
           data: {
             full_name: formData.fullName,
+            user_type: formData.userType,
           }
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Signup error:', error);
+        throw error;
+      }
 
-      toast({
-        title: "Account Created!",
-        description: "Please check your email to verify your account."
+      console.log('Signup successful:', data);
+
+      if (data.user && !data.user.email_confirmed_at) {
+        toast({
+          title: "Account Created!",
+          description: "Please check your email to verify your account before logging in."
+        });
+      } else {
+        toast({
+          title: "Account Created!",
+          description: `Welcome to ShopHub! Your ${formData.userType} account has been created.`
+        });
+      }
+
+      // Clear form
+      setFormData({
+        email: "",
+        password: "",
+        fullName: "",
+        confirmPassword: "",
+        userType: "buyer"
       });
 
     } catch (error: any) {
+      console.error('Signup failed:', error);
       if (error.message.includes('already registered')) {
         toast({
           title: "Account Exists",
@@ -228,24 +282,41 @@ const Auth = () => {
           <CardContent>
             <form onSubmit={isLogin ? handleLogin : handleSignUp} className="space-y-4">
               {!isLogin && (
-                <div className="space-y-2">
-                  <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
-                    Full Name
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                    <Input
-                      type="text"
-                      id="fullName"
-                      name="fullName"
-                      value={formData.fullName}
-                      onChange={handleChange}
-                      required={!isLogin}
-                      placeholder="Enter your full name"
-                      className="pl-10"
-                    />
+                <>
+                  <div className="space-y-2">
+                    <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
+                      Full Name
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                      <Input
+                        type="text"
+                        id="fullName"
+                        name="fullName"
+                        value={formData.fullName}
+                        onChange={handleChange}
+                        required={!isLogin}
+                        placeholder="Enter your full name"
+                        className="pl-10"
+                      />
+                    </div>
                   </div>
-                </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="userType" className="block text-sm font-medium text-gray-700">
+                      Account Type
+                    </label>
+                    <Select value={formData.userType} onValueChange={handleUserTypeChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select account type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="buyer">Buyer - Shop for products</SelectItem>
+                        <SelectItem value="seller">Seller - Sell your products</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
               )}
 
               <div className="space-y-2">
@@ -329,7 +400,13 @@ const Auth = () => {
                 <button
                   onClick={() => {
                     setIsLogin(!isLogin);
-                    setFormData({ email: "", password: "", fullName: "", confirmPassword: "" });
+                    setFormData({ 
+                      email: "", 
+                      password: "", 
+                      fullName: "", 
+                      confirmPassword: "",
+                      userType: "buyer"
+                    });
                   }}
                   className="text-blue-600 hover:text-blue-700 font-semibold"
                 >
