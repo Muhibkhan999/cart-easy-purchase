@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, ShoppingCart, Star, Plus, Minus, Heart, Share2 } from "lucide-react";
@@ -7,61 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/hooks/useCart";
 import { toast } from "@/hooks/use-toast";
-
-// Mock product data (same as in Index.tsx)
-const mockProducts = [
-  {
-    id: 1,
-    name: "Premium Wireless Headphones",
-    price: 299.99,
-    originalPrice: 399.99,
-    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&h=600&fit=crop",
-    category: "Electronics",
-    rating: 4.8,
-    reviews: 1234,
-    description: "High-quality wireless headphones with noise cancellation",
-    features: [
-      "Active Noise Cancellation",
-      "30-hour battery life",
-      "Premium leather ear cushions",
-      "Bluetooth 5.0 connectivity",
-      "Quick charge - 5 min for 3 hours playback"
-    ],
-    specifications: {
-      "Battery Life": "30 hours",
-      "Charging Time": "2 hours",
-      "Weight": "250g",
-      "Connectivity": "Bluetooth 5.0, 3.5mm jack",
-      "Frequency Response": "20Hz - 20kHz"
-    }
-  },
-  {
-    id: 2,
-    name: "Stylish Laptop Backpack",
-    price: 89.99,
-    originalPrice: 129.99,
-    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=600&fit=crop",
-    category: "Accessories",
-    rating: 4.6,
-    reviews: 856,
-    description: "Durable and stylish backpack perfect for laptops and daily use",
-    features: [
-      "Fits laptops up to 15.6 inches",
-      "Water-resistant material",
-      "Multiple compartments",
-      "Padded shoulder straps",
-      "USB charging port"
-    ],
-    specifications: {
-      "Capacity": "25 liters",
-      "Material": "Polyester",
-      "Dimensions": "45 x 30 x 15 cm",
-      "Weight": "1.2kg",
-      "Laptop Compartment": "Up to 15.6 inches"
-    }
-  },
-  // Add other products with similar structure...
-];
+import { mockProducts } from "@/data/mockProducts";
 
 const ProductDetail = () => {
   const { id } = useParams();

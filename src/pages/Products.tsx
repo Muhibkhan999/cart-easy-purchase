@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ShoppingCart, Search, Star, Filter, Menu, X } from "lucide-react";
@@ -7,78 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCart } from "@/hooks/useCart";
-
-// Using the same mock data as Index
-const mockProducts = [
-  {
-    id: 1,
-    name: "Premium Wireless Headphones",
-    price: 299.99,
-    originalPrice: 399.99,
-    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop",
-    category: "Electronics",
-    rating: 4.8,
-    reviews: 1234,
-    description: "High-quality wireless headphones with noise cancellation"
-  },
-  {
-    id: 2,
-    name: "Stylish Laptop Backpack",
-    price: 89.99,
-    originalPrice: 129.99,
-    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=400&fit=crop",
-    category: "Accessories",
-    rating: 4.6,
-    reviews: 856,
-    description: "Durable and stylish backpack perfect for laptops and daily use"
-  },
-  {
-    id: 3,
-    name: "Smart Fitness Watch",
-    price: 199.99,
-    originalPrice: 249.99,
-    image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop",
-    category: "Electronics",
-    rating: 4.7,
-    reviews: 2103,
-    description: "Track your fitness goals with this advanced smartwatch"
-  },
-  {
-    id: 4,
-    name: "Organic Cotton T-Shirt",
-    price: 29.99,
-    originalPrice: 39.99,
-    image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
-    category: "Clothing",
-    rating: 4.5,
-    reviews: 432,
-    description: "Comfortable and sustainable organic cotton t-shirt"
-  },
-  {
-    id: 5,
-    name: "Professional Camera Lens",
-    price: 799.99,
-    originalPrice: 999.99,
-    image: "https://images.unsplash.com/photo-1606983340126-99ab4feaa64a?w=400&h=400&fit=crop",
-    category: "Electronics",
-    rating: 4.9,
-    reviews: 567,
-    description: "Professional grade camera lens for stunning photography"
-  },
-  {
-    id: 6,
-    name: "Minimalist Wallet",
-    price: 49.99,
-    originalPrice: 69.99,
-    image: "https://images.unsplash.com/photo-1627123424574-724758594e93?w=400&h=400&fit=crop",
-    category: "Accessories",
-    rating: 4.4,
-    reviews: 234,
-    description: "Sleek and minimalist wallet with RFID protection"
-  }
-];
-
-const categories = ["All", "Electronics", "Clothing", "Accessories"];
+import { mockProducts, categories } from "@/data/mockProducts";
 
 const Products = () => {
   const [products, setProducts] = useState(mockProducts);
@@ -155,7 +83,7 @@ const Products = () => {
 
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">All Products</h1>
+          <h1 className="text-3xl font-bold text-gray-800 mb-4">All Products ({filteredProducts.length})</h1>
           <div className="flex flex-col sm:flex-row gap-4 items-center">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
