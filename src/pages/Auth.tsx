@@ -142,13 +142,12 @@ const Auth = () => {
         fullName: formData.fullName 
       });
       
-      const redirectUrl = `${window.location.origin}/`;
-      
+      // First create user with simple signup
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: redirectUrl,
+          emailRedirectTo: `${window.location.origin}/`,
           data: {
             full_name: formData.fullName,
             user_type: formData.userType,
@@ -158,21 +157,81 @@ const Auth = () => {
 
       if (error) {
         console.error('Signup error:', error);
-        throw error;
-      }
+        
+        // Handle specific database errors
+        if (error.message.includes('Database error')) {
+          // Try to create profile manually after signup
+          if (data.user) {
+            try {
+              // Insert profile
+              const { error: profileError } = await supabase
+                .from('profiles')
+                .insert({
+                  user_id: data.user.id,
+                  email: formData.email,
+                  full_name: formData.fullName
+                });
 
-      console.log('Signup successful:', data);
+              if (profileError) {
+                console.error('Profile creation error:', profileError);
+              }
 
-      if (data.user && !data.user.email_confirmed_at) {
-        toast({
-          title: "Account Created!",
-          description: "Please check your email to verify your account before logging in."
-        });
+              // Insert user role
+              const { error: roleError } = await supabase
+                .from('user_roles')
+                .insert({
+                  user_id: data.user.id,
+                  role: formData.userType
+                });
+
+              if (roleError) {
+                console.error('Role creation error:', roleError);
+              }
+
+              // If seller, create seller profile
+              if (formData.userType === 'seller') {
+                const { error: sellerError } = await supabase
+                  .from('seller_profiles')
+                  .insert({
+                    user_id: data.user.id,
+                    business_name: `${formData.fullName}'s Store`,
+                    is_verified: false
+                  });
+
+                if (sellerError) {
+                  console.error('Seller profile creation error:', sellerError);
+                }
+              }
+
+              toast({
+                title: "Account Created!",
+                description: `Welcome to ShopHub! Your ${formData.userType} account has been created.`
+              });
+            } catch (manualError) {
+              console.error('Manual profile creation failed:', manualError);
+              toast({
+                title: "Account Created",
+                description: "Please check your email to verify your account.",
+              });
+            }
+          }
+        } else {
+          throw error;
+        }
       } else {
-        toast({
-          title: "Account Created!",
-          description: `Welcome to ShopHub! Your ${formData.userType} account has been created.`
-        });
+        console.log('Signup successful:', data);
+
+        if (data.user && !data.user.email_confirmed_at) {
+          toast({
+            title: "Account Created!",
+            description: "Please check your email to verify your account before logging in."
+          });
+        } else {
+          toast({
+            title: "Account Created!",
+            description: `Welcome to ShopHub! Your ${formData.userType} account has been created.`
+          });
+        }
       }
 
       // Clear form
