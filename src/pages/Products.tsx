@@ -43,7 +43,8 @@ const Products = () => {
       id: product.id,
       name: product.name,
       price: product.price,
-      image: product.image_url || "/placeholder.svg"
+      image: product.image_url || "/placeholder.svg",
+      description: product.description || ""
     });
     toast({
       title: "Added to Cart",

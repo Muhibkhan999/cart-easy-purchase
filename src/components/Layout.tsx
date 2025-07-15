@@ -13,7 +13,7 @@ interface LayoutProps {
 }
 
 const Layout = ({ children }: LayoutProps) => {
-  const { items } = useCart();
+  const { cartItems } = useCart();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [user, setUser] = useState<SupabaseUser | null>(null);
@@ -49,7 +49,7 @@ const Layout = ({ children }: LayoutProps) => {
     }
   };
 
-  const cartItemCount = items.reduce((total, item) => total + item.quantity, 0);
+  const cartItemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   return (
     <div className="min-h-screen bg-gray-50">
