@@ -9,6 +9,9 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { Database } from '@/integrations/supabase/types';
+
+type UserRole = Database['public']['Enums']['app_role'];
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -24,7 +27,7 @@ const Auth = () => {
     password: "",
     fullName: "",
     confirmPassword: "",
-    userType: "buyer"
+    userType: "buyer" as UserRole
   });
 
   useEffect(() => {
@@ -65,7 +68,7 @@ const Auth = () => {
   const handleUserTypeChange = (value: string) => {
     setFormData({
       ...formData,
-      userType: value
+      userType: value as UserRole
     });
   };
 
@@ -240,7 +243,7 @@ const Auth = () => {
         password: "",
         fullName: "",
         confirmPassword: "",
-        userType: "buyer"
+        userType: "buyer" as UserRole
       });
 
     } catch (error: any) {
@@ -464,7 +467,7 @@ const Auth = () => {
                       password: "", 
                       fullName: "", 
                       confirmPassword: "",
-                      userType: "buyer"
+                      userType: "buyer" as UserRole
                     });
                   }}
                   className="text-blue-600 hover:text-blue-700 font-semibold"

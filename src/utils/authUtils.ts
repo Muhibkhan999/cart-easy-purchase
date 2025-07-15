@@ -1,11 +1,14 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from '@/integrations/supabase/types';
+
+type UserRole = Database['public']['Enums']['app_role'];
 
 export const createUserProfile = async (
   userId: string,
   email: string,
   fullName: string,
-  userType: string
+  userType: UserRole
 ) => {
   try {
     // Insert profile
