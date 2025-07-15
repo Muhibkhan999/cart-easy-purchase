@@ -40,7 +40,7 @@ const Auth = () => {
         
         if (session?.user) {
           // User is logged in, redirect to home
-          navigate('/');
+          setTimeout(() => navigate('/'), 100);
         }
       }
     );
@@ -51,7 +51,7 @@ const Auth = () => {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        navigate('/');
+        setTimeout(() => navigate('/'), 100);
       }
     });
 
