@@ -78,8 +78,13 @@ const Auth = () => {
 
     try {
       console.log('Attempting login with:', formData.email);
+      
+      if (!formData.email || !formData.password) {
+        throw new Error('Please enter both email and password');
+      }
+      
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: formData.email,
+        email: formData.email.trim(),
         password: formData.password,
       });
 
@@ -89,10 +94,14 @@ const Auth = () => {
       }
 
       console.log('Login successful:', data);
-      toast({
-        title: "Welcome back!",
-        description: "You have successfully logged in."
-      });
+      
+      if (data.user) {
+        toast({
+          title: "Welcome back!",
+          description: "You have successfully logged in."
+        });
+        // The redirect will happen via the auth state change listener
+      }
 
     } catch (error: any) {
       console.error('Login failed:', error);
