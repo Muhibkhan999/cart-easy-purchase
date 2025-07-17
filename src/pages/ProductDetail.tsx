@@ -1,12 +1,17 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, ShoppingCart, Star, Plus, Minus, Heart, Share2 } from "lucide-react";
+import { ArrowLeft, ShoppingCart, Star, Plus, Minus, Heart, Share2, MessageCircle, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/hooks/useCart";
 import { toast } from "@/hooks/use-toast";
 import { mockProducts } from "@/data/mockProducts";
+import { supabase } from "@/integrations/supabase/client";
+import ProductComments from "@/components/ProductComments";
+import ChatSystem from "@/components/ChatSystem";
+import DataVisualization from "@/components/DataVisualization";
+import moment from "moment";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -15,6 +20,9 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [activeTab, setActiveTab] = useState("description");
+  const [user, setUser] = useState<any>(null);
+  const [showChat, setShowChat] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   useEffect(() => {
     const foundProduct = mockProducts.find(p => p.id === parseInt(id || "0"));
@@ -28,7 +36,15 @@ const ProductDetail = () => {
         metaDescription.setAttribute('content', foundProduct.description);
       }
     }
+    
+    // Check user authentication
+    checkUser();
   }, [id]);
+
+  const checkUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setUser(user);
+  };
 
   const handleAddToCart = () => {
     if (product) {
@@ -49,6 +65,45 @@ const ProductDetail = () => {
     }
   };
 
+  const handleBuyNow = async () => {
+    if (!user) {
+      toast({
+        title: "Please log in",
+        description: "You need to be logged in to make a purchase",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setPaymentLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: {
+          product_id: product.id,
+          quantity: quantity,
+          amount: product.price * quantity,
+          product_name: product.name,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data.url) {
+        // Open Stripe checkout in a new tab
+        window.open(data.url, '_blank');
+      }
+    } catch (error: any) {
+      console.error('Payment error:', error);
+      toast({
+        title: "Payment Error",
+        description: error.message || "Failed to initiate payment",
+        variant: "destructive",
+      });
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
   if (!product) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
@@ -65,6 +120,24 @@ const ProductDetail = () => {
   }
 
   const discountPercentage = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
+
+  // Sample data for visualization
+  const salesTrendData = [
+    { name: 'Jan', value: 65 },
+    { name: 'Feb', value: 59 },
+    { name: 'Mar', value: 80 },
+    { name: 'Apr', value: 81 },
+    { name: 'May', value: 56 },
+    { name: 'Jun', value: 55 },
+  ];
+
+  const ratingDistribution = [
+    { name: '5 Stars', value: 120 },
+    { name: '4 Stars', value: 80 },
+    { name: '3 Stars', value: 30 },
+    { name: '2 Stars', value: 15 },
+    { name: '1 Star', value: 5 },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -175,7 +248,7 @@ const ProductDetail = () => {
                   </div>
                 </div>
 
-                <div className="flex space-x-4">
+                <div className="flex space-x-4 mb-4">
                   <Button 
                     className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                     onClick={handleAddToCart}
@@ -189,6 +262,26 @@ const ProductDetail = () => {
                   <Button variant="outline" size="sm">
                     <Share2 className="h-4 w-4" />
                   </Button>
+                </div>
+
+                <div className="flex space-x-4">
+                  <Button 
+                    className="flex-1 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+                    onClick={handleBuyNow}
+                    disabled={paymentLoading}
+                  >
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    {paymentLoading ? "Processing..." : "Buy Now"}
+                  </Button>
+                  {user && (
+                    <Button 
+                      variant="outline"
+                      onClick={() => setShowChat(!showChat)}
+                    >
+                      <MessageCircle className="h-4 w-4 mr-2" />
+                      Chat with Seller
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -217,6 +310,13 @@ const ProductDetail = () => {
                     className="pb-2"
                   >
                     Specifications
+                  </Button>
+                  <Button
+                    variant={activeTab === "analytics" ? "default" : "ghost"}
+                    onClick={() => setActiveTab("analytics")}
+                    className="pb-2"
+                  >
+                    Analytics
                   </Button>
                 </div>
 
@@ -247,10 +347,67 @@ const ProductDetail = () => {
                     ))}
                   </div>
                 )}
+
+                {activeTab === "analytics" && (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <DataVisualization
+                        title="Sales Trend (Last 6 Months)"
+                        data={salesTrendData}
+                        type="line"
+                        colors={['#3B82F6']}
+                      />
+                      <DataVisualization
+                        title="Rating Distribution"
+                        data={ratingDistribution}
+                        type="pie"
+                        colors={['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#6B7280']}
+                      />
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h4 className="font-semibold mb-2">Product Stats</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                          <span className="text-gray-600">Total Sales:</span>
+                          <div className="font-bold text-lg">1,247</div>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Views:</span>
+                          <div className="font-bold text-lg">15,892</div>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Added to Cart:</span>
+                          <div className="font-bold text-lg">3,456</div>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Conversion Rate:</span>
+                          <div className="font-bold text-lg">7.8%</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
         </div>
+
+        {/* Comments Section */}
+        <div className="mt-12">
+          <ProductComments 
+            productId={id || ""} 
+            userId={user?.id}
+          />
+        </div>
+
+        {/* Chat System */}
+        <ChatSystem
+          currentUserId={user?.id}
+          sellerId="mock-seller-id" // In a real app, this would come from the product
+          productId={id}
+          isVisible={showChat}
+          onToggle={() => setShowChat(!showChat)}
+        />
       </div>
     </div>
   );
